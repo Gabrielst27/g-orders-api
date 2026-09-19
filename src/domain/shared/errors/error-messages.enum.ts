@@ -8,3 +8,7 @@ export enum UnauthorizedMessage {
 export enum ForbiddenMessage {
   USER_HAVE_NOT_PERMISSION = 'Usuário sem permissão para esta ação',
 }
+
+export enum BadRequestMessage {
+  INVALID_DATA = 'Dados inválidos',
+}
