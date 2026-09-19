@@ -18,7 +18,7 @@ generated/prisma
 
 ---
 
-# Modelagem
+## Modelagem
 
 O banco atualmente é composto pelas seguintes estruturas:
 
@@ -38,7 +38,7 @@ ORDER_ITEMS
 PRODUCTS
 ```
 
-## USERS
+### USERS
 
 A tabela `USERS` representa a identidade utilizada pela aplicação.
 
@@ -58,7 +58,7 @@ O relacionamento com `ORDERS` permite associar os pedidos ao usuário responsáv
 
 ---
 
-## ORDERS
+### ORDERS
 
 A tabela `ORDERS` representa os pedidos da aplicação.
 
@@ -80,7 +80,7 @@ A tabela `ORDERS` representa os pedidos da aplicação.
 
 Optei por separar o endereço em campos dentro do próprio pedido, uma vez que adicionar o endereço por extenso em um único campo é um erro potencial conhecido na normalização de bancos de dados. Segundo a primeira forma normal, campos devem ser valores atômicos. Em projetos complexos eu manteria essa abordagem, porém criaria, também, uma tabela de endereços atrelada ao usuário, uma vez que a
 
-### Índices
+#### Índices
 
 Foram definidos índices para:
 
@@ -94,7 +94,7 @@ Dessa forma, é possível filtrar de forma otimizada por número do pedido, stat
 
 ---
 
-# ORDER_ITEMS
+### ORDER_ITEMS
 
 A tabela `ORDER_ITEMS` representa os itens pertencentes a um pedido.
 
@@ -122,7 +122,7 @@ ORDER_ID  → ORDERS.ID
 PRODUCT_ID → PRODUCTS.ID
 ```
 
-### Preço no momento da compra
+#### Preço no momento da compra
 
 Além da referência ao produto, `ORDER_ITEMS` armazena:
 
@@ -152,7 +152,7 @@ Nesse cenário, o produto atualmente custa `150.00`, mas o item daquele pedido f
 
 ---
 
-# PRODUCTS
+### PRODUCTS
 
 A tabela `PRODUCTS` representa os produtos disponíveis para os pedidos.
 
@@ -167,7 +167,7 @@ O preço utiliza `DECIMAL(10,2)` para representar valores monetários sem utiliz
 
 ---
 
-# Relacionamentos
+### Relacionamentos
 
 Os relacionamentos definidos no schema são:
 
@@ -205,7 +205,7 @@ ORDER_ITEMS.PRODUCT_ID
 
 ---
 
-# Tipos monetários
+### Tipos monetários
 
 Os campos relacionados a valores monetários utilizam:
 
@@ -224,7 +224,7 @@ O preço atual do produto e o preço praticado no pedido são tratados como info
 
 ---
 
-# Identificadores
+### Identificadores
 
 As entidades utilizam UUID como identificador primário:
 
