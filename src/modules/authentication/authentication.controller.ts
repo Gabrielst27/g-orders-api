@@ -7,7 +7,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { AuthenticationService } from 'src/modules/authentication/authentication.service';
-import { SignUpDto } from 'src/modules/authentication/requests/sign-up.request';
+import { LoginRequest } from 'src/modules/authentication/requests/login.request';
+import { SignUpRequest } from 'src/modules/authentication/requests/sign-up.request';
 
 @Controller({
   version: '1',
@@ -21,7 +22,13 @@ export class AuthenticationController {
 
   @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
-  signUp(@Body() data: SignUpDto) {
+  signUp(@Body() data: SignUpRequest) {
     return this.authenticationService.signUp(data);
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  login(@Body() data: LoginRequest) {
+    return this.authenticationService.login(data);
   }
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { IHashService } from 'src/application/shared/hash.service.interface';
+import { Login } from 'src/application/user/use-cases/login.usecase';
 import { SignUp } from 'src/application/user/use-cases/sign-up.usecase';
 import { UserRepository } from 'src/domain/user/repositories/user.repository';
 import { AuthenticationController } from 'src/modules/authentication/authentication.controller';
@@ -30,6 +31,13 @@ import { HashModule } from 'src/modules/shared/hash/hash.module';
       provide: SignUp.UseCase,
       useFactory: (repository: UserRepository, hashService: IHashService) => {
         return new SignUp.UseCase(repository, hashService);
+      },
+      inject: ['Repository', 'HashService'],
+    },
+    {
+      provide: Login.UseCase,
+      useFactory: (repository: UserRepository, hashService: IHashService) => {
+        return new Login.UseCase(repository, hashService);
       },
       inject: ['Repository', 'HashService'],
     },

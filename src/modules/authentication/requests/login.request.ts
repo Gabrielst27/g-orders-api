@@ -2,18 +2,11 @@ import {
   IsNotEmpty,
   IsNumberString,
   IsString,
-  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
 
-export class SignUpRequest {
-  @Matches(/^[\p{L}\s]+$/u, {
-    message: 'Apenas letras e espaço em branco são permitidos no nome',
-  })
-  @IsNotEmpty({ message: 'O campo username não pode estar vazio' })
-  username!: string;
-
+export class LoginRequest {
   @IsNumberString({}, { message: 'O campo cpf deve ser uma string numérica' })
   @MinLength(11, {
     message: 'O campo cpf deve ter 11 caracteres',
