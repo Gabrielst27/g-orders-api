@@ -7,7 +7,6 @@ import { BadRequestMessage } from 'src/domain/shared/errors/error-messages.enum'
 
 export namespace CreateOrder {
   export type Input = {
-    number: number;
     deliveryDate: Date;
     deliveryStreet: string;
     deliveryNumber: number;
@@ -26,7 +25,6 @@ export namespace CreateOrder {
 
     async execute(input: Input): Promise<PublicOrder.Dto> {
       const {
-        number,
         deliveryDate,
         deliveryStreet,
         deliveryNumber,
@@ -38,7 +36,6 @@ export namespace CreateOrder {
         customerId,
       } = input;
       if (
-        !number ||
         !deliveryDate ||
         !deliveryStreet ||
         !deliveryNumber ||
@@ -50,7 +47,8 @@ export namespace CreateOrder {
       ) {
         throw new BadRequestError(BadRequestMessage.INVALID_DATA);
       }
-
+      const latest = await this.repository.findLast();
+      const number = latest ? latest.toJson().number + 1 : 1;
       const newOrder = OrderEntity.createNew({
         number,
         deliveryDate,

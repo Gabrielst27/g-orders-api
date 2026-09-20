@@ -25,8 +25,8 @@ export abstract class OrderRepository
   }
 
   abstract findById(id: string): Promise<OrderEntity>;
-  abstract findByNumber(number: string): Promise<OrderEntity>;
-  abstract findByCustomer(customerId: string): Promise<OrderEntity>;
+  abstract findLast(): Promise<OrderEntity | null>;
+  abstract findByNumber(number: number): Promise<OrderEntity>;
   abstract findMany(
     params: SearchParams,
     queries: AppQuery[],
