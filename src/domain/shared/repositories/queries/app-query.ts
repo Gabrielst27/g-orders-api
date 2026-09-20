@@ -9,7 +9,7 @@ export type AppQueryProps = {
 
 export class AppQuery {
   readonly field: string;
-  readonly value: string | number | Date | boolean | null;
+  readonly value: any;
   readonly operator: EDbOperators;
   public readonly isValid: boolean = false;
 

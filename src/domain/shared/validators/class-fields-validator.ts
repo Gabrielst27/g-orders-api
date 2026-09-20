@@ -7,6 +7,21 @@ export interface FieldsErrors {
 export abstract class ClassFieldsValidator {
   public errors: FieldsErrors = {};
 
+  static makeFieldsErrors(): FieldsErrors {
+    const fieldsErrors: FieldsErrors = {};
+    return fieldsErrors;
+  }
+
+  static assignError(
+    fieldsErrors: FieldsErrors,
+    field: string,
+    error: string,
+  ): void {
+    fieldsErrors[field] = fieldsErrors[field]
+      ? [...fieldsErrors[field], error]
+      : [error];
+  }
+
   validate(fieldsRules: any): boolean {
     const errors = validateSync(fieldsRules);
 

@@ -42,10 +42,11 @@ model Order {
   DELIVERY_CITY         String   @db.VarChar(64)
   DELIVERY_STATE        String   @db.VarChar(64)
   DELIVERY_ZIP_CODE     String   @db.VarChar(8)
-  DELIVERY_COMPLEMENT   String   @db.VarChar(128)
+  DELIVERY_COMPLEMENT   String?  @db.VarChar(128)
   STATUS                Status
   CUSTOMER_ID           String   @db.Uuid
   CREATED_AT            DateTime @db.Timestamptz()
+  EXCLUDED              Boolean
 
   customer User        @relation(fields: [CUSTOMER_ID], references: [ID])
   items    OrderItem[]
