@@ -33,5 +33,6 @@ export abstract class OrderRepository
     queries: AppQuery[],
   ): Promise<SearchResult<OrderEntity>>;
   abstract create(item: OrderEntity): Promise<OrderEntity>;
+  abstract update(item: OrderEntity): Promise<OrderEntity>;
   abstract delete(id: string): Promise<OrderEntity>;
 }

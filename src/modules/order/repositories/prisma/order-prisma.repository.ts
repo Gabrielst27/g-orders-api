@@ -115,6 +115,19 @@ export class OrderPrismaRepository extends OrderRepository {
     }
   }
 
+  async update(item: OrderEntity): Promise<OrderEntity> {
+    const model = OrderPrismaModelMapper.toModel(item);
+    try {
+      await this.service.order.update({
+        where: { ID: item.toJson().id },
+        data: model,
+      });
+      return item;
+    } catch (error) {
+      throw new InternalServerErrorException('Erro ao atualizar pedido');
+    }
+  }
+
   delete(id: string): Promise<OrderEntity> {
     throw new Error('Method not implemented.');
   }

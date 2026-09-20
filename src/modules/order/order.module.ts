@@ -8,6 +8,10 @@ import { PrismaService } from 'src/modules/shared/database/prisma/prisma.service
 import { OrderPrismaRepository } from 'src/modules/order/repositories/prisma/order-prisma.repository';
 import { PrismaModule } from 'src/modules/shared/database/prisma/prisma.module';
 import { FindManyOrders } from 'src/application/order/use-cases/find-many.usecase';
+import { ConfirmOrder } from 'src/application/order/use-cases/confirm.usecase';
+import { ShipOrder } from 'src/application/order/use-cases/ship.usecase';
+import { DeliverOrder } from 'src/application/order/use-cases/deliver.usecase';
+import { CancelOrder } from 'src/application/order/use-cases/cancel.usecase';
 
 @Module({
   imports: [AuthenticationModule, PrismaModule],
@@ -32,6 +36,34 @@ import { FindManyOrders } from 'src/application/order/use-cases/find-many.usecas
       provide: FindManyOrders.UseCase,
       useFactory: (repository: OrderRepository) => {
         return new FindManyOrders.UseCase(repository);
+      },
+      inject: ['Repository'],
+    },
+    {
+      provide: ConfirmOrder.UseCase,
+      useFactory: (repository: OrderRepository) => {
+        return new ConfirmOrder.UseCase(repository);
+      },
+      inject: ['Repository'],
+    },
+    {
+      provide: ShipOrder.UseCase,
+      useFactory: (repository: OrderRepository) => {
+        return new ShipOrder.UseCase(repository);
+      },
+      inject: ['Repository'],
+    },
+    {
+      provide: DeliverOrder.UseCase,
+      useFactory: (repository: OrderRepository) => {
+        return new DeliverOrder.UseCase(repository);
+      },
+      inject: ['Repository'],
+    },
+    {
+      provide: CancelOrder.UseCase,
+      useFactory: (repository: OrderRepository) => {
+        return new CancelOrder.UseCase(repository);
       },
       inject: ['Repository'],
     },

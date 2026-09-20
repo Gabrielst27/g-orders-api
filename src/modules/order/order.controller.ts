@@ -4,7 +4,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseUUIDPipe,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -36,5 +39,45 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   findMany(@Query() query: FindManyOrdersQuery) {
     return this.service.findMany(query);
+  }
+
+  @Put(':orderId/confirm')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticationGuard)
+  confirm(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @GetAuthUser() authUser: AuthenticatedUser.Props,
+  ) {
+    return this.service.confirm(orderId, authUser);
+  }
+
+  @Put(':orderId/ship')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticationGuard)
+  ship(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @GetAuthUser() authUser: AuthenticatedUser.Props,
+  ) {
+    return this.service.ship(orderId, authUser);
+  }
+
+  @Put(':orderId/deliver')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticationGuard)
+  deliver(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @GetAuthUser() authUser: AuthenticatedUser.Props,
+  ) {
+    return this.service.deliver(orderId, authUser);
+  }
+
+  @Put(':orderId/cancel')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticationGuard)
+  cancel(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @GetAuthUser() authUser: AuthenticatedUser.Props,
+  ) {
+    return this.service.cancel(orderId, authUser);
   }
 }
