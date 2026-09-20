@@ -28,7 +28,7 @@ export class OrderEntity extends Entity<OrderEntityProps> {
   }
 
   static createNew(
-    props: Omit<OrderEntityProps, 'createdAt' | 'excluded'>,
+    props: Omit<OrderEntityProps, 'createdAt' | 'excluded' | 'status'>,
   ): OrderEntity {
     return new OrderEntity({
       number: props.number,
