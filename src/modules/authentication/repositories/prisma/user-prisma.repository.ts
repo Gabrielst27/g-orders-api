@@ -50,8 +50,10 @@ export class UserPrismaRepository extends UserRepository {
       await this.service.user.create({ data: model });
       return item;
     } catch (error) {
-      if (error instanceof ConflictException) {
-        throw new ConflictException(error.message);
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('Usuário já existe');
+        }
       }
       if (error instanceof InternalServerErrorException) {
         throw new InternalServerErrorException(error.message);
