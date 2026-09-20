@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  IsAlpha,
   IsDate,
   IsEnum,
   IsNotEmpty,
@@ -15,7 +14,7 @@ import { ClassFieldsValidator } from 'src/domain/shared/validators/class-fields-
 
 class AppQueryRules {
   @IsNotEmpty()
-  @IsAlpha()
+  @IsString()
   field!: string;
 
   @IsOptional()

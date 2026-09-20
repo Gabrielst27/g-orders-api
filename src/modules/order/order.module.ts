@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { AuthenticationModule } from 'src/modules/authentication/authentication.module';
-import { CreateOrder } from 'src/application/order/create.usecase';
+import { CreateOrder } from 'src/application/order/use-cases/create.usecase';
 import { OrderRepository } from 'src/domain/order/repositories/order.repository';
 import { PrismaService } from 'src/modules/shared/database/prisma/prisma.service';
 import { OrderPrismaRepository } from 'src/modules/order/repositories/prisma/order-prisma.repository';
 import { PrismaModule } from 'src/modules/shared/database/prisma/prisma.module';
+import { FindManyOrders } from 'src/application/order/use-cases/find-many.usecase';
 
 @Module({
   imports: [AuthenticationModule, PrismaModule],
@@ -24,6 +25,13 @@ import { PrismaModule } from 'src/modules/shared/database/prisma/prisma.module';
       provide: CreateOrder.UseCase,
       useFactory: (repository: OrderRepository) => {
         return new CreateOrder.UseCase(repository);
+      },
+      inject: ['Repository'],
+    },
+    {
+      provide: FindManyOrders.UseCase,
+      useFactory: (repository: OrderRepository) => {
+        return new FindManyOrders.UseCase(repository);
       },
       inject: ['Repository'],
     },

@@ -14,7 +14,7 @@ export class SearchParams {
   constructor(props: SearchProps) {
     this.page = props.page && props.page >= 0 ? props.page : 0;
     this.perPage = SearchParams.verifyPerPage(props.perPage);
-    this.sort = props.sort || 'createdAt';
+    this.sort = props.sort || 'CREATED_AT';
     this.sortDir = props.sortDir || 'desc';
   }
 
