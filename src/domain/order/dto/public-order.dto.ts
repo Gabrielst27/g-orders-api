@@ -1,3 +1,4 @@
+import { PublicOrderItem } from 'src/domain/order/dto/public-order-item.dto';
 import {
   OrderEntity,
   OrderEntityProps,
@@ -5,7 +6,12 @@ import {
 import { OrderStatus } from 'src/domain/order/enum/order-status.enum';
 
 export namespace PublicOrder {
-  type Props = Required<Omit<OrderEntityProps, 'excluded'> & { id: string }>;
+  type Props = Required<
+    Omit<OrderEntityProps, 'excluded'> & {
+      id: string;
+      items: PublicOrderItem.Dto[];
+    }
+  >;
 
   export class Dto implements Props {
     id: string;
@@ -20,6 +26,7 @@ export namespace PublicOrder {
     deliveryComplement: string;
     status: OrderStatus;
     customerId: string;
+    items: PublicOrderItem.Dto[];
     createdAt: Date;
 
     constructor(props: Props) {
@@ -36,11 +43,15 @@ export namespace PublicOrder {
       this.deliveryZipcode = props.deliveryZipcode;
       this.deliveryComplement = props.deliveryComplement;
       this.status = props.status;
+      this.items = props.items;
     }
   }
 
   export class Mapper {
     static fromEntity(entity: OrderEntity): Dto {
+      const items = entity.items.map((item) =>
+        PublicOrderItem.Mapper.fromEntity(item),
+      );
       const json = entity.toJson();
       return new Dto({
         id: json.id,
@@ -55,6 +66,7 @@ export namespace PublicOrder {
         deliveryState: json.deliveryState,
         deliveryZipcode: json.deliveryZipcode,
         deliveryComplement: json.deliveryComplement ?? '',
+        items,
         status: json.status,
       });
     }

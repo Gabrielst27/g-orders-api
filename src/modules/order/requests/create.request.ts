@@ -1,13 +1,29 @@
+import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+
+class OrderItem {
+  @IsUUID('4', { message: 'O campo productId deve ser um UUID válido' })
+  @IsNotEmpty({ message: 'O campo productId é obrigatório' })
+  productId!: string;
+
+  @IsInt({ message: 'O campo quantity deve ser um número inteiro' })
+  @Min(1, { message: 'O campo quantity deve ser maior que 0' })
+  @IsNotEmpty({ message: 'O campo quantity é obrigatório' })
+  quantity!: number;
+}
 
 export class CreateOrderRequest {
   @Matches(
@@ -19,6 +35,16 @@ export class CreateOrderRequest {
   )
   @IsNotEmpty({ message: 'O campo deliveryDate é obrigatório' })
   deliveryDate!: string;
+
+  @IsArray({ message: 'O campo itemsIds deve ser um array de IDs' })
+  @ValidateNested({
+    each: true,
+    message: 'O campo itemsIds deve ser um array de objetos válidos',
+  })
+  @Type(() => OrderItem)
+  @ArrayMinSize(1, { message: 'O campo items deve ter pelo menos 1 item' })
+  @IsNotEmpty({ message: 'O campo items é obrigatório' })
+  items!: OrderItem[];
 
   @IsString({ message: 'O campo deliveryStreet deve ser uma string válida' })
   @MinLength(2, {

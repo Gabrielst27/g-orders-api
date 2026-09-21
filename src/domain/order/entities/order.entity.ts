@@ -1,3 +1,4 @@
+import { OrderItemEntity } from 'src/domain/order/entities/order-item.entity';
 import { OrderStatus } from 'src/domain/order/enum/order-status.enum';
 import {
   OrderFieldsValidator,
@@ -22,13 +23,21 @@ export type OrderEntityProps = {
 } & EntityProps;
 
 export class OrderEntity extends Entity<OrderEntityProps> {
-  protected constructor(props: OrderEntityProps, id?: string) {
+  private _items: OrderItemEntity[];
+
+  protected constructor(
+    props: OrderEntityProps,
+    items: OrderItemEntity[],
+    id?: string,
+  ) {
     OrderEntity.validateFields(props);
     super(props, id);
+    this._items = items;
   }
 
   static createNew(
     props: Omit<OrderEntityProps, 'createdAt' | 'excluded' | 'status'>,
+    items: OrderItemEntity[],
   ): OrderEntity {
     const errors = OrderFieldsValidator.makeFieldsErrors();
     const deliveryDateField = 'deliveryDate';
@@ -43,30 +52,41 @@ export class OrderEntity extends Entity<OrderEntityProps> {
     if (Object.keys(errors).length > 0) {
       throw new EntityValidationError(errors);
     }
-    return new OrderEntity({
-      number: props.number,
-      deliveryDate: props.deliveryDate,
-      deliveryStreet: props.deliveryStreet,
-      deliveryNumber: props.deliveryNumber,
-      deliveryNeighborhood: props.deliveryNeighborhood,
-      deliveryCity: props.deliveryCity,
-      deliveryState: props.deliveryState,
-      deliveryZipcode: props.deliveryZipcode,
-      deliveryComplement: props.deliveryComplement,
-      customerId: props.customerId,
-      status: OrderStatus.CREATED,
-      excluded: false,
-    });
+    return new OrderEntity(
+      {
+        number: props.number,
+        deliveryDate: props.deliveryDate,
+        deliveryStreet: props.deliveryStreet,
+        deliveryNumber: props.deliveryNumber,
+        deliveryNeighborhood: props.deliveryNeighborhood,
+        deliveryCity: props.deliveryCity,
+        deliveryState: props.deliveryState,
+        deliveryZipcode: props.deliveryZipcode,
+        deliveryComplement: props.deliveryComplement,
+        customerId: props.customerId,
+        status: OrderStatus.CREATED,
+        excluded: false,
+      },
+      items,
+    );
   }
 
-  static createExisting(props: OrderEntityProps, id: string): OrderEntity {
-    return new OrderEntity(props, id);
+  static createExisting(
+    props: OrderEntityProps,
+    items: OrderItemEntity[],
+    id: string,
+  ): OrderEntity {
+    return new OrderEntity(props, items, id);
   }
 
   static validateFields(props: OrderEntityProps): void {
     const validator = OrderFieldsValidatorFactory.create();
     const isValid = validator.validate(props);
     if (!isValid) throw new EntityValidationError(validator.errors);
+  }
+
+  get items() {
+    return this._items;
   }
 
   updateDelivery(

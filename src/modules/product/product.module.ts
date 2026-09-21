@@ -33,5 +33,6 @@ import { FindProductsByIdsList } from 'src/application/product/use-cases/find-by
       inject: ['Repository'],
     },
   ],
+  exports: [ProductService],
 })
 export class ProductModule {}

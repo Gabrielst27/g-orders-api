@@ -10,6 +10,7 @@ import { AppQuery } from 'src/domain/shared/repositories/queries/app-query';
 import { EDbOperators } from 'src/domain/shared/repositories/queries/db-operators.enum';
 import { SearchParams } from 'src/domain/shared/repositories/search-params';
 import { SearchResult } from 'src/domain/shared/repositories/search-result';
+import { OrderItemPrismaModelMapper } from 'src/modules/order/repositories/prisma/order-item-prisma-model.mapper';
 import { OrderPrismaModelMapper } from 'src/modules/order/repositories/prisma/order-prisma-model.mapper';
 import { PrismaService } from 'src/modules/shared/database/prisma/prisma.service';
 import { mapToPrismaOperator } from 'src/modules/shared/database/prisma/utils/operator.mapper';
@@ -20,25 +21,33 @@ export class OrderPrismaRepository extends OrderRepository {
   }
 
   async findById(id: string): Promise<OrderEntity> {
-    const model = await this.service.order.findUnique({
+    const macroModel = await this.service.order.findUnique({
       where: { ID: id },
+      include: {
+        items: true,
+      },
     });
-    if (!model) {
+    if (!macroModel) {
       throw new NotFoundException('Pedido não encontrado com o id fornecido');
     }
-    return OrderPrismaModelMapper.toEntity(model);
+    const { items, ...model } = macroModel;
+    return OrderPrismaModelMapper.toEntity(model, items);
   }
 
   async findByNumber(number: number): Promise<OrderEntity> {
-    const model = await this.service.order.findUnique({
+    const macroModel = await this.service.order.findUnique({
       where: { NUMBER: number },
+      include: {
+        items: true,
+      },
     });
-    if (!model) {
+    if (!macroModel) {
       throw new NotFoundException(
         'Pedido não encontrado com o number fornecido',
       );
     }
-    return OrderPrismaModelMapper.toEntity(model);
+    const { items, ...model } = macroModel;
+    return OrderPrismaModelMapper.toEntity(model, items);
   }
 
   async findMany(
@@ -74,11 +83,17 @@ export class OrderPrismaRepository extends OrderRepository {
           })),
         ],
       },
+      include: {
+        items: true,
+      },
       skip: skip,
       take: take,
       orderBy: { [sort]: params.sortDir },
     });
-    const items = models.map((model) => OrderPrismaModelMapper.toEntity(model));
+    const items = models.map((macroModel) => {
+      const { items, ...model } = macroModel;
+      return OrderPrismaModelMapper.toEntity(model, items);
+    });
     return new SearchResult({
       items,
       total,
@@ -90,17 +105,26 @@ export class OrderPrismaRepository extends OrderRepository {
   }
 
   async findLast(): Promise<OrderEntity | null> {
-    const model = await this.service.order.findFirst({
+    const macroModel = await this.service.order.findFirst({
       orderBy: { CREATED_AT: 'desc' },
+      include: { items: true },
     });
-    if (!model) return null;
-    return OrderPrismaModelMapper.toEntity(model);
+    if (!macroModel) return null;
+    const { items, ...model } = macroModel;
+    return OrderPrismaModelMapper.toEntity(model, items);
   }
 
   async create(item: OrderEntity): Promise<OrderEntity> {
     const model = OrderPrismaModelMapper.toModel(item);
+    const items = item.items.map((i) => {
+      const macroItem = OrderItemPrismaModelMapper.toModel(i);
+      const { ORDER_ID, ...item } = macroItem;
+      return item;
+    });
     try {
-      await this.service.order.create({ data: model });
+      await this.service.order.create({
+        data: { ...model, items: { create: items } },
+      });
       return item;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {

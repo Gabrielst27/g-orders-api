@@ -1,6 +1,7 @@
-import { Order, Status, User } from 'generated/prisma/client';
+import { Order, OrderItem, Status } from 'generated/prisma/client';
 import { OrderEntity } from 'src/domain/order/entities/order.entity';
 import { OrderStatus as AppOrderStatus } from 'src/domain/order/enum/order-status.enum';
+import { OrderItemPrismaModelMapper } from 'src/modules/order/repositories/prisma/order-item-prisma-model.mapper';
 
 export class OrderPrismaModelMapper {
   static toModel(entity: OrderEntity): Order {
@@ -24,7 +25,10 @@ export class OrderPrismaModelMapper {
     return orderModel;
   }
 
-  static toEntity(model: Order): OrderEntity {
+  static toEntity(model: Order, items: OrderItem[]): OrderEntity {
+    const orderItems = items.map((item) =>
+      OrderItemPrismaModelMapper.toEntity(item),
+    );
     const orderEntity = OrderEntity.createExisting(
       {
         number: model.NUMBER,
@@ -41,8 +45,10 @@ export class OrderPrismaModelMapper {
         excluded: model.EXCLUDED,
         status: this.statusToAppEnum(model.STATUS),
       },
+      orderItems,
       model.ID,
     );
+
     return orderEntity;
   }
 

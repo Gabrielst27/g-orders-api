@@ -13,9 +13,10 @@ import { ShipOrder } from 'src/application/order/use-cases/ship.usecase';
 import { DeliverOrder } from 'src/application/order/use-cases/deliver.usecase';
 import { CancelOrder } from 'src/application/order/use-cases/cancel.usecase';
 import { UpdateOrderDelivery } from 'src/application/order/use-cases/update-address.usecase';
+import { ProductModule } from 'src/modules/product/product.module';
 
 @Module({
-  imports: [AuthenticationModule, PrismaModule],
+  imports: [AuthenticationModule, PrismaModule, ProductModule],
   controllers: [OrderController],
   providers: [
     OrderService,
