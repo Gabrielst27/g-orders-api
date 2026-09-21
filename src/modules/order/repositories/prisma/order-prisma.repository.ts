@@ -27,7 +27,7 @@ export class OrderPrismaRepository extends OrderRepository {
         items: true,
       },
     });
-    if (!macroModel) {
+    if (!macroModel || macroModel.EXCLUDED) {
       throw new NotFoundException('Pedido não encontrado com o id fornecido');
     }
     const { items, ...model } = macroModel;
@@ -41,7 +41,7 @@ export class OrderPrismaRepository extends OrderRepository {
         items: true,
       },
     });
-    if (!macroModel) {
+    if (!macroModel || macroModel.EXCLUDED) {
       throw new NotFoundException(
         'Pedido não encontrado com o number fornecido',
       );
@@ -73,6 +73,9 @@ export class OrderPrismaRepository extends OrderRepository {
     const total = await this.service.order.count({
       where: {
         AND: [
+          {
+            EXCLUDED: false,
+          },
           ...mappedQueries.map((query) => ({
             [query.field]:
               query.operator === EDbOperators.EQUALS
@@ -85,6 +88,7 @@ export class OrderPrismaRepository extends OrderRepository {
     const models = await this.service.order.findMany({
       where: {
         AND: [
+          { EXCLUDED: false },
           ...mappedQueries.map((query) => ({
             [query.field]:
               query.operator === EDbOperators.EQUALS
@@ -116,6 +120,7 @@ export class OrderPrismaRepository extends OrderRepository {
 
   async findLast(): Promise<OrderEntity | null> {
     const macroModel = await this.service.order.findFirst({
+      where: { EXCLUDED: false },
       orderBy: { CREATED_AT: 'desc' },
       include: { items: true },
     });

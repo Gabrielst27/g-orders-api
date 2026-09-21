@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -295,5 +296,45 @@ export class OrderController {
     @GetAuthUser() authUser: AuthenticatedUser.Props,
   ) {
     return this.service.updateDelivery(orderId, body, authUser);
+  }
+
+  @Delete(':orderId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthenticationGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Excluir pedido',
+    description:
+      'Marca o pedido como excluído, impossibilitando qualquer movimentação ou consulta futura.',
+  })
+  @ApiParam({
+    name: 'orderId',
+    description: 'Identificador único do pedido que será excluído.',
+    example: '550e8400-e29b-41d4-a716-446655440002',
+    type: String,
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Pedido excluído com sucesso.',
+    type: OrderResponse,
+  })
+  @ApiBadRequestResponse({
+    description: 'O identificador do pedido não possui um UUID válido.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Token de autenticação ausente, inválido ou expirado.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Pedido não encontrado.',
+  })
+  @ApiUnprocessableEntityResponse({
+    description:
+      'O pedido não pode ser excluído porque seu status atual não permite essa transição.',
+  })
+  exclude(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @GetAuthUser() authUser: AuthenticatedUser.Props,
+  ) {
+    return this.service.exclude(orderId, authUser);
   }
 }

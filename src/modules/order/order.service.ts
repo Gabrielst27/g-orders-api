@@ -3,6 +3,7 @@ import { CancelOrder } from 'src/application/order/use-cases/cancel.usecase';
 import { ConfirmOrder } from 'src/application/order/use-cases/confirm.usecase';
 import { CreateOrder } from 'src/application/order/use-cases/create.usecase';
 import { DeliverOrder } from 'src/application/order/use-cases/deliver.usecase';
+import { ExcludeOrder } from 'src/application/order/use-cases/exclude.usecase';
 import { FindManyOrders } from 'src/application/order/use-cases/find-many.usecase';
 import { ShipOrder } from 'src/application/order/use-cases/ship.usecase';
 import { UpdateOrderDelivery } from 'src/application/order/use-cases/update-address.usecase';
@@ -43,7 +44,11 @@ export class OrderService {
   @Inject(UpdateOrderDelivery.UseCase)
   private readonly updateOrderDeliveryUseCase!: UpdateOrderDelivery.UseCase;
 
+  @Inject(ExcludeOrder.UseCase)
+  private readonly excludeOrderUseCase!: ExcludeOrder.UseCase;
+
   @Inject(ProductService) private readonly productService!: ProductService;
+
   @Inject(AuthenticationService)
   private readonly authService!: AuthenticationService;
 
@@ -116,6 +121,7 @@ export class OrderService {
     });
     return this.mapOrdersToResponse([order])[0];
   }
+
   async ship(
     orderId: string,
     authUser: AuthenticatedUser.Props,
@@ -126,6 +132,7 @@ export class OrderService {
     });
     return this.mapOrdersToResponse([order])[0];
   }
+
   async deliver(
     orderId: string,
     authUser: AuthenticatedUser.Props,
@@ -136,6 +143,18 @@ export class OrderService {
     });
     return this.mapOrdersToResponse([order])[0];
   }
+
+  async exclude(
+    orderId: string,
+    authUser: AuthenticatedUser.Props,
+  ): Promise<OrderResponse> {
+    const order = await this.excludeOrderUseCase.execute({
+      orderId,
+      authUserId: authUser.id,
+    });
+    return this.mapOrdersToResponse([order])[0];
+  }
+
   async cancel(
     orderId: string,
     authUser: AuthenticatedUser.Props,
