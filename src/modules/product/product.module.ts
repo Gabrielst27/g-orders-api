@@ -6,6 +6,8 @@ import { ProductPrismaRepository } from 'src/modules/product/repositories/prisma
 import { PrismaModule } from 'src/modules/shared/database/prisma/prisma.module';
 import { CreateProduct } from 'src/application/product/use-cases/create.usecase';
 import { FindProductsByIdsList } from 'src/application/product/use-cases/find-by-ids-list.usecase';
+import { ProductController } from './product.controller';
+import { FindManyProducts } from 'src/application/product/use-cases/find-many.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -32,7 +34,15 @@ import { FindProductsByIdsList } from 'src/application/product/use-cases/find-by
       },
       inject: ['Repository'],
     },
+    {
+      provide: FindManyProducts.UseCase,
+      useFactory: (repository: ProductRepository) => {
+        return new FindManyProducts.UseCase(repository);
+      },
+      inject: ['Repository'],
+    },
   ],
   exports: [ProductService],
+  controllers: [ProductController],
 })
 export class ProductModule {}

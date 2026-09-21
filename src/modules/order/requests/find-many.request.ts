@@ -9,9 +9,9 @@ import {
   Min,
 } from 'class-validator';
 import { OrderStatus } from 'src/domain/order/enum/order-status.enum';
-import { SearchParamsDto } from 'src/domain/shared/dto/search-params.dto';
+import { SearchParamsRequest } from 'src/utils/requests/search-params.request';
 
-export class FindManyOrdersQuery extends SearchParamsDto {
+export class FindManyOrdersQuery extends SearchParamsRequest {
   @ApiPropertyOptional({
     description:
       'Número identificador do pedido. Quando informado, retorna apenas o pedido que possui exatamente este número.',

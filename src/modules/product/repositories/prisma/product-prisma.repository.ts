@@ -7,10 +7,12 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { ProductEntity } from 'src/domain/product/entities/product.entity';
 import { ProductRepository } from 'src/domain/product/repositories/product.repository';
 import { AppQuery } from 'src/domain/shared/repositories/queries/app-query';
+import { EDbOperators } from 'src/domain/shared/repositories/queries/db-operators.enum';
 import { SearchParams } from 'src/domain/shared/repositories/search-params';
 import { SearchResult } from 'src/domain/shared/repositories/search-result';
 import { ProductPrismaModelMapper } from 'src/modules/product/repositories/prisma/product-prisma-model.mapper';
 import { PrismaService } from 'src/modules/shared/database/prisma/prisma.service';
+import { mapToPrismaOperator } from 'src/modules/shared/database/prisma/utils/operator.mapper';
 
 export class ProductPrismaRepository extends ProductRepository {
   constructor(private readonly service: PrismaService) {
@@ -27,11 +29,62 @@ export class ProductPrismaRepository extends ProductRepository {
     return ProductPrismaModelMapper.toEntity(model);
   }
 
-  findMany(
+  async findMany(
     params: SearchParams,
     queries: AppQuery[],
   ): Promise<SearchResult<ProductEntity>> {
-    throw new Error('Method not implemented.');
+    const isSortable = super.isSortable(params.sort);
+    const searchFields = queries.map((query) => query.field);
+
+    super.validateSearchFields(searchFields);
+
+    const mappedQueries = queries.map((query) => ({
+      ...query,
+      field: this.mapProperty(query.field) ?? query.field,
+    }));
+
+    const sort = isSortable
+      ? (this.mapProperty(params.sort) ?? 'CREATED_AT')
+      : 'CREATED_AT';
+    const take = params.perPage;
+    const skip = take * params.page;
+
+    const total = await this.service.product.count({
+      where: {
+        AND: [
+          ...mappedQueries.map((query) => ({
+            [query.field]:
+              query.operator === EDbOperators.EQUALS
+                ? query.value
+                : { [mapToPrismaOperator(query.operator)]: query.value },
+          })),
+        ],
+      },
+    });
+    const models = await this.service.product.findMany({
+      where: {
+        AND: [
+          ...mappedQueries.map((query) => ({
+            [query.field]:
+              query.operator === EDbOperators.EQUALS
+                ? query.value
+                : { [mapToPrismaOperator(query.operator)]: query.value },
+          })),
+        ],
+      },
+      skip: skip,
+      take: take,
+      orderBy: { [sort]: params.sortDir },
+    });
+    const items = models.map((item) => ProductPrismaModelMapper.toEntity(item));
+    return new SearchResult({
+      items,
+      total,
+      page: params.page,
+      perPage: params.perPage,
+      sort,
+      sortDir: params.sortDir,
+    });
   }
 
   async findByIdsList(ids: string[]): Promise<ProductEntity[]> {

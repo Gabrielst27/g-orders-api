@@ -17,6 +17,21 @@ export abstract class ProductRepository
     return [...super.sortableFields];
   }
 
+  protected readonly propertyMapper: Record<string, string> = {
+    id: 'ID',
+    description: 'DESCRIPTION',
+    price: 'PRICE',
+    createdAt: 'CREATED_AT',
+  };
+
+  protected mapProperty(property?: string): string | undefined {
+    if (!property) {
+      return undefined;
+    }
+
+    return this.propertyMapper[property] ?? property;
+  }
+
   abstract findById(id: string): Promise<ProductEntity>;
   abstract findMany(
     params: SearchParams,
