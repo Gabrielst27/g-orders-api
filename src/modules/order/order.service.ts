@@ -12,6 +12,7 @@ import { PublicOrder } from 'src/domain/order/dto/public-order.dto';
 import { BadRequestError } from 'src/domain/shared/errors/bad-request.error';
 import { BadRequestMessage } from 'src/domain/shared/errors/error-messages.enum';
 import { SearchResult } from 'src/domain/shared/repositories/search-result';
+import { PublicUser } from 'src/domain/user/dto/public-user.dto';
 import { AuthenticationService } from 'src/modules/authentication/authentication.service';
 import { CreateOrderRequest } from 'src/modules/order/requests/create.request';
 import { FindManyOrdersQuery } from 'src/modules/order/requests/find-many.request';
@@ -43,6 +44,8 @@ export class OrderService {
   private readonly updateOrderDeliveryUseCase!: UpdateOrderDelivery.UseCase;
 
   @Inject(ProductService) private readonly productService!: ProductService;
+  @Inject(AuthenticationService)
+  private readonly authService!: AuthenticationService;
 
   async create(
     data: CreateOrderRequest,
@@ -73,7 +76,8 @@ export class OrderService {
       deliveryDate: deliveryDate,
       items,
     });
-    return OrderResponse.mapFromPublicDto(order, products);
+    const customer = await this.authService.findUserById(order.customerId);
+    return OrderResponse.mapFromPublicDto(order, products, customer);
   }
 
   async findMany(
@@ -166,11 +170,14 @@ export class OrderService {
     const allItems: PublicOrderItem.Dto[] = [];
     orders.forEach((order) => allItems.push(...order.items));
     if (allItems.length === 0) {
-      return orders.map((order) => OrderResponse.mapFromPublicDto(order, []));
+      return [];
     }
 
     const productsIds = [...new Set(allItems.map((item) => item.productId))];
     const products = await this.productService.findByIdsList(productsIds);
+
+    const customersIds = [...new Set(orders.map((order) => order.customerId))];
+    const customers = await this.authService.findUserByIdsList(customersIds);
 
     return orders.map((order) => {
       const orderProductIds = new Set(
@@ -179,7 +186,8 @@ export class OrderService {
       const orderProducts = products.filter((product) =>
         orderProductIds.has(product.id),
       );
-      return OrderResponse.mapFromPublicDto(order, orderProducts);
+      const customer = customers.find((c) => c.id === order.customerId);
+      return OrderResponse.mapFromPublicDto(order, orderProducts, customer!);
     });
   }
 }

@@ -18,6 +18,7 @@ export abstract class UserRepository
   }
 
   abstract findById(id: string): Promise<UserEntity>;
+  abstract findByIdsList(ids: string[]): Promise<UserEntity[]>;
   abstract findByCpf(cpf: string): Promise<UserEntity>;
   abstract findMany(
     params: SearchParams,

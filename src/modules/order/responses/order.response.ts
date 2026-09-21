@@ -1,13 +1,19 @@
 import { PublicOrder } from 'src/domain/order/dto/public-order.dto';
 import { OrderStatus } from 'src/domain/order/enum/order-status.enum';
 import { PublicProduct } from 'src/domain/product/dto/public-product.dto';
+import { PublicUser } from 'src/domain/user/dto/public-user.dto';
 
 type OrderItemProps = {
   id: string;
   description: string;
   unitPriceAtPurchase: number;
   quantity: number;
-  createdAt: Date;
+  addedAt: Date;
+};
+
+type OrderCustomerProps = {
+  id: string;
+  username: string;
 };
 
 type OrderProps = {
@@ -22,7 +28,7 @@ type OrderProps = {
   deliveryZipcode: string;
   deliveryComplement: string;
   status: OrderStatus;
-  customerId: string;
+  customer: OrderCustomerProps;
   items: OrderItemProps[];
   createdAt: Date;
 };
@@ -39,14 +45,14 @@ export class OrderResponse {
   deliveryZipcode: string;
   deliveryComplement: string;
   status: OrderStatus;
-  customerId: string;
+  customer: OrderCustomerProps;
   items: OrderItemProps[];
   createdAt: Date;
 
   constructor(props: OrderProps) {
     this.id = props.id;
     this.number = props.number;
-    this.customerId = props.customerId;
+    this.customer = props.customer;
     this.createdAt = props.createdAt;
     this.deliveryDate = props.deliveryDate;
     this.deliveryStreet = props.deliveryStreet;
@@ -63,6 +69,7 @@ export class OrderResponse {
   static mapFromPublicDto(
     dto: PublicOrder.Dto,
     items: PublicProduct.Dto[],
+    customer: PublicUser.Dto,
   ): OrderResponse {
     const mappedItems: OrderItemProps[] = items.map((item) => {
       const orderItem = dto.items.find(
@@ -73,9 +80,17 @@ export class OrderResponse {
         description: item.description,
         unitPriceAtPurchase: orderItem!.unitPriceAtPurchase,
         quantity: orderItem!.quantity,
-        createdAt: item.createdAt,
+        addedAt: item.createdAt,
       };
     });
-    return new OrderResponse({ ...dto, items: mappedItems });
+    const mappedCustomer: OrderCustomerProps = {
+      id: customer.id,
+      username: customer.username,
+    };
+    return new OrderResponse({
+      ...dto,
+      items: mappedItems,
+      customer: mappedCustomer,
+    });
   }
 }

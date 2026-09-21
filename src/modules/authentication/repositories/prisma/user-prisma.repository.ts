@@ -27,6 +27,15 @@ export class UserPrismaRepository extends UserRepository {
     return UserPrismaModelMapper.toEntity(model);
   }
 
+  async findByIdsList(ids: string[]): Promise<UserEntity[]> {
+    const models = await this.service.user.findMany({
+      where: {
+        ID: { in: ids },
+      },
+    });
+    return models.map((model) => UserPrismaModelMapper.toEntity(model));
+  }
+
   async findByCpf(cpf: string): Promise<UserEntity> {
     const model = await this.service.user.findUnique({
       where: { CPF: cpf },
