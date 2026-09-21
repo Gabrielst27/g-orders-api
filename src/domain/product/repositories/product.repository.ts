@@ -22,6 +22,7 @@ export abstract class ProductRepository
     params: SearchParams,
     queries: AppQuery[],
   ): Promise<SearchResult<ProductEntity>>;
+  abstract findByIdsList(ids: string[]): Promise<ProductEntity[]>;
   abstract create(item: ProductEntity): Promise<ProductEntity>;
   abstract delete(id: string): Promise<ProductEntity>;
 }
