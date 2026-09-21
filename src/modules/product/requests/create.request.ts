@@ -8,9 +8,8 @@ import {
 } from 'class-validator';
 
 export class CreateProductRequest {
-  @Matches(/^[\p{L}\s]+$/u, {
-    message:
-      'Apenas letras e espaço em branco são permitidos no campo description',
+  @Matches(/^[\p{L}\d\s']+$/u, {
+    message: 'Apenas letras e espaço em branco são permitidos no nome',
   })
   @MinLength(2, {
     message: 'O campo description deve ter 2 caracteres',

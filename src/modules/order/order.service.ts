@@ -7,11 +7,16 @@ import { FindManyOrders } from 'src/application/order/use-cases/find-many.usecas
 import { ShipOrder } from 'src/application/order/use-cases/ship.usecase';
 import { UpdateOrderDelivery } from 'src/application/order/use-cases/update-address.usecase';
 import { AuthenticatedUser } from 'src/domain/auth/models/authenticated-user.model';
+import { PublicOrderItem } from 'src/domain/order/dto/public-order-item.dto';
+import { PublicOrder } from 'src/domain/order/dto/public-order.dto';
 import { BadRequestError } from 'src/domain/shared/errors/bad-request.error';
 import { BadRequestMessage } from 'src/domain/shared/errors/error-messages.enum';
+import { SearchResult } from 'src/domain/shared/repositories/search-result';
+import { AuthenticationService } from 'src/modules/authentication/authentication.service';
 import { CreateOrderRequest } from 'src/modules/order/requests/create.request';
 import { FindManyOrdersQuery } from 'src/modules/order/requests/find-many.request';
 import { UpdateOrderDeliveryRequest } from 'src/modules/order/requests/update-delivery.request';
+import { OrderResponse } from 'src/modules/order/responses/order.response';
 import { ProductService } from 'src/modules/product/product.service';
 
 @Injectable()
@@ -39,7 +44,10 @@ export class OrderService {
 
   @Inject(ProductService) private readonly productService!: ProductService;
 
-  async create(data: CreateOrderRequest, authUser: AuthenticatedUser.Props) {
+  async create(
+    data: CreateOrderRequest,
+    authUser: AuthenticatedUser.Props,
+  ): Promise<OrderResponse> {
     const products = await this.productService.findByIdsList(
       data.items.map((item) => item.productId),
     );
@@ -65,13 +73,12 @@ export class OrderService {
       deliveryDate: deliveryDate,
       items,
     });
-    return {
-      ...order,
-      items: products,
-    };
+    return OrderResponse.mapFromPublicDto(order, products);
   }
 
-  async findMany(query: FindManyOrdersQuery) {
+  async findMany(
+    query: FindManyOrdersQuery,
+  ): Promise<SearchResult<OrderResponse>> {
     const {
       number,
       fromDeliveryDate,
@@ -80,7 +87,7 @@ export class OrderService {
       status,
       ...searchProps
     } = query;
-    return await this.findManyOrdersUseCase.execute({
+    const orders = await this.findManyOrdersUseCase.execute({
       searchProps,
       number,
       fromDeliveryDate,
@@ -88,46 +95,85 @@ export class OrderService {
       customerId,
       status,
     });
+    const mappedOrders = await this.mapOrdersToResponse(orders.items);
+    return {
+      ...orders,
+      items: mappedOrders,
+    };
   }
 
-  async confirm(orderId: string, authUser: AuthenticatedUser.Props) {
-    return await this.confirmOrderUseCase.execute({
+  async confirm(
+    orderId: string,
+    authUser: AuthenticatedUser.Props,
+  ): Promise<OrderResponse> {
+    const order = await this.confirmOrderUseCase.execute({
       orderId,
       authUserId: authUser.id,
     });
+    return this.mapOrdersToResponse([order])[0];
   }
-  async ship(orderId: string, authUser: AuthenticatedUser.Props) {
-    return await this.shipOrderUseCase.execute({
+  async ship(
+    orderId: string,
+    authUser: AuthenticatedUser.Props,
+  ): Promise<OrderResponse> {
+    const order = await this.shipOrderUseCase.execute({
       orderId,
       authUserId: authUser.id,
     });
+    return this.mapOrdersToResponse([order])[0];
   }
-  async deliver(orderId: string, authUser: AuthenticatedUser.Props) {
-    return await this.deliverOrderUseCase.execute({
+  async deliver(
+    orderId: string,
+    authUser: AuthenticatedUser.Props,
+  ): Promise<OrderResponse> {
+    const order = await this.deliverOrderUseCase.execute({
       orderId,
       authUserId: authUser.id,
     });
+    return this.mapOrdersToResponse([order])[0];
   }
-  async cancel(orderId: string, authUser: AuthenticatedUser.Props) {
-    return await this.cancelOrderUseCase.execute({
+  async cancel(
+    orderId: string,
+    authUser: AuthenticatedUser.Props,
+  ): Promise<OrderResponse> {
+    const order = await this.cancelOrderUseCase.execute({
       orderId,
       authUserId: authUser.id,
     });
+    return this.mapOrdersToResponse([order])[0];
   }
 
   async updateDelivery(
     orderId: string,
     data: UpdateOrderDeliveryRequest,
     authUser: AuthenticatedUser.Props,
-  ) {
+  ): Promise<OrderResponse> {
     const deliveryDate = data.deliveryDate
       ? new Date(data.deliveryDate)
       : undefined;
-    return await this.updateOrderDeliveryUseCase.execute({
+    const order = await this.updateOrderDeliveryUseCase.execute({
       orderId,
       authUserId: authUser.id,
       ...data,
       deliveryDate,
+    });
+    return this.mapOrdersToResponse([order])[0];
+  }
+
+  private async mapOrdersToResponse(orders: PublicOrder.Dto[]) {
+    const allItems: PublicOrderItem.Dto[] = [];
+    orders.forEach((order) => allItems.push(...order.items));
+    const productsIds = [...new Set(allItems.map((item) => item.productId))];
+    const products = await this.productService.findByIdsList(productsIds);
+
+    return orders.map((order) => {
+      const orderProductIds = new Set(
+        order.items.map((item) => item.productId),
+      );
+      const orderProducts = products.filter((product) =>
+        orderProductIds.has(product.id),
+      );
+      return OrderResponse.mapFromPublicDto(order, orderProducts);
     });
   }
 }

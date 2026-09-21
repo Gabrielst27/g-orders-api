@@ -12,7 +12,7 @@ import { ProductEntityProps } from 'src/domain/product/entities/product.entity';
 import { ClassFieldsValidator } from 'src/domain/shared/validators/class-fields-validator';
 
 export class ProductFieldsRules implements ProductEntityProps {
-  @Matches(/^[\p{L}\s]+$/u, {
+  @Matches(/^[\p{L}\d\s']+$/u, {
     message: 'Apenas letras e espaço em branco são permitidos no nome',
   })
   @MinLength(2)
