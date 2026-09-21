@@ -5,11 +5,33 @@ import { EntityValidationFilter } from 'src/utils/exception-filters/entity-valid
 import { ForbiddenFilter } from 'src/utils/exception-filters/forbidden.filter';
 import { BadRequestFilter } from 'src/utils/exception-filters/bad-request.filter';
 import { UnauthorizedFilter } from 'src/utils/exception-filters/unauthorized.filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+export const AUTH_SCHEME = 'access-token';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableVersioning({ type: VersioningType.URI });
+
+  const config = new DocumentBuilder()
+    .setTitle('GOrders API')
+    .setDescription(
+      'API Restful do sistema GOrders, desenvolvida como teste técnico para a empresa NaPorta.',
+    )
+    .setVersion('1')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Informe o token de acesso JWT',
+      },
+      AUTH_SCHEME,
+    )
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
 
   app.useGlobalPipes(
     new ValidationPipe({
