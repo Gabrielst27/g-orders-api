@@ -19,22 +19,23 @@ export class AuthenticationGuard implements CanActivate {
     const request = http.getRequest();
     const headers = request.headers;
     try {
-      if (!headers) {
-        throw UnauthorizedException;
-      }
-      const authorization = headers.authorization;
+      const authorization = headers?.authorization;
 
       if (!authorization) {
-        throw UnauthorizedException;
+        throw new UnauthorizedException('Token não informado');
       }
 
-      const token: string = authorization.split(' ')[1];
+      const token = authorization.split(' ')[1];
+
+      if (!token) {
+        throw new UnauthorizedException('Token mal formatado');
+      }
+
       const payload = await this.authenticationService.verifyToken(token);
-      const authUser = {
+      request.user = {
         id: payload.sub,
         token,
       } as AuthenticatedUser.Props;
-      request.user = authUser;
       return true;
     } catch (error) {
       throw new UnauthorizedException(

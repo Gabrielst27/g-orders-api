@@ -7,8 +7,6 @@ import { BadRequestFilter } from 'src/utils/exception-filters/bad-request.filter
 import { UnauthorizedFilter } from 'src/utils/exception-filters/unauthorized.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-export const AUTH_SCHEME = 'access-token';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -27,7 +25,7 @@ async function bootstrap() {
         bearerFormat: 'JWT',
         description: 'Informe o token de acesso JWT',
       },
-      AUTH_SCHEME,
+      'access-token',
     )
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);

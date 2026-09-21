@@ -25,7 +25,6 @@ import {
 } from '@nestjs/swagger';
 
 import type { AuthenticatedUser } from 'src/domain/auth/models/authenticated-user.model';
-import { AUTH_SCHEME } from 'src/main';
 import { AuthenticationGuard } from 'src/modules/authentication/guards/authentication.guard';
 import { OrderService } from 'src/modules/order/order.service';
 import { OrderResponse } from 'src/modules/order/responses/order.response';
@@ -46,7 +45,7 @@ export class OrderController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthenticationGuard)
-  @ApiBearerAuth(AUTH_SCHEME)
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Criar um novo pedido',
     description:
@@ -97,7 +96,7 @@ export class OrderController {
   @Put(':orderId/confirm')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticationGuard)
-  @ApiBearerAuth(AUTH_SCHEME)
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Confirmar pedido',
     description:
@@ -137,7 +136,7 @@ export class OrderController {
   @Put(':orderId/ship')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticationGuard)
-  @ApiBearerAuth(AUTH_SCHEME)
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Despachar pedido',
     description:
@@ -177,7 +176,7 @@ export class OrderController {
   @Put(':orderId/deliver')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticationGuard)
-  @ApiBearerAuth(AUTH_SCHEME)
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Marcar pedido como entregue',
     description:
@@ -218,7 +217,7 @@ export class OrderController {
   @Put(':orderId/cancel')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticationGuard)
-  @ApiBearerAuth(AUTH_SCHEME)
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Cancelar pedido',
     description:
@@ -258,7 +257,7 @@ export class OrderController {
   @Put(':orderId/update-delivery')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticationGuard)
-  @ApiBearerAuth(AUTH_SCHEME)
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Atualizar dados de entrega do pedido',
     description:
