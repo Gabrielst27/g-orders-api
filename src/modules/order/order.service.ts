@@ -160,9 +160,15 @@ export class OrderService {
     return this.mapOrdersToResponse([order])[0];
   }
 
-  private async mapOrdersToResponse(orders: PublicOrder.Dto[]) {
+  private async mapOrdersToResponse(
+    orders: PublicOrder.Dto[],
+  ): Promise<OrderResponse[]> {
     const allItems: PublicOrderItem.Dto[] = [];
     orders.forEach((order) => allItems.push(...order.items));
+    if (allItems.length === 0) {
+      return orders.map((order) => OrderResponse.mapFromPublicDto(order, []));
+    }
+
     const productsIds = [...new Set(allItems.map((item) => item.productId))];
     const products = await this.productService.findByIdsList(productsIds);
 
