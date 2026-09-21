@@ -11,6 +11,12 @@ export class SignUpRequest {
   @Matches(/^[\p{L}\s]+$/u, {
     message: 'Apenas letras e espaço em branco são permitidos no nome',
   })
+  @MinLength(2, {
+    message: 'O campo username deve ter 2 caracteres',
+  })
+  @MaxLength(128, {
+    message: 'O campo username deve ter 128 caracteres',
+  })
   @IsNotEmpty({ message: 'O campo username não pode estar vazio' })
   username!: string;
 
