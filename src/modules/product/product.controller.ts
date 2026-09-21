@@ -5,10 +5,9 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { SearchResult } from 'src/domain/shared/repositories/search-result';
 
 import { ProductService } from 'src/modules/product/product.service';
-import { ProductResponse } from 'src/modules/product/responses/product.response';
+import { SearchProductsResponse } from 'src/modules/product/responses/search.response';
 import { SearchParamsRequest } from 'src/utils/requests/search-params.request';
 
 @ApiTags('Products')
@@ -27,7 +26,7 @@ export class ProductController {
   })
   @ApiOkResponse({
     description: 'Produtos encontrados com sucesso.',
-    type: SearchResult<ProductResponse>,
+    type: SearchProductsResponse,
     isArray: true,
   })
   @ApiBadRequestResponse({
@@ -36,7 +35,7 @@ export class ProductController {
   })
   findMany(
     @Query() query: SearchParamsRequest,
-  ): Promise<SearchResult<ProductResponse>> {
+  ): Promise<SearchProductsResponse> {
     return this.service.findMany(query);
   }
 }

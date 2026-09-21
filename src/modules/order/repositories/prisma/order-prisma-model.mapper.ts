@@ -53,13 +53,14 @@ export class OrderPrismaModelMapper {
   }
 
   static statusToModelEnum(status: AppOrderStatus): Status {
-    const mapper = {
-      [AppOrderStatus.CREATED]: Status.CREATED,
-      [AppOrderStatus.CONFIRMED]: Status.CONFIRMED,
-      [AppOrderStatus.SHIPPED]: Status.SHIPPED,
-      [AppOrderStatus.DELIVERED]: Status.DELIVERED,
-      [AppOrderStatus.CANCELED]: Status.CANCELED,
+    const mapper: Record<AppOrderStatus, Status> = {
+      [AppOrderStatus.CREATED]: 'CREATED' as Status,
+      [AppOrderStatus.CONFIRMED]: 'CONFIRMED' as Status,
+      [AppOrderStatus.SHIPPED]: 'SHIPPED' as Status,
+      [AppOrderStatus.DELIVERED]: 'DELIVERED' as Status,
+      [AppOrderStatus.CANCELED]: 'CANCELED' as Status,
     };
+
     return mapper[status];
   }
 
@@ -72,5 +73,13 @@ export class OrderPrismaModelMapper {
       [Status.CANCELED]: AppOrderStatus.CANCELED,
     };
     return mapper[status];
+  }
+
+  static mapQueryValue(field: string, value: unknown): unknown {
+    if (field === 'STATUS') {
+      return this.statusToModelEnum(value as AppOrderStatus);
+    }
+
+    return value;
   }
 }

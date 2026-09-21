@@ -57,13 +57,23 @@ export class OrderPrismaRepository extends OrderRepository {
     const isSortable = super.isSortable(params.sort);
     const searchFields = queries.map((query) => query.field);
     super.validateSearchFields(searchFields);
-    const sort = isSortable ? params.sort : 'DELIVERY_DATE';
+
+    const mappedQueries = queries.map((query) => ({
+      ...query,
+      field: this.mapProperty(query.field) ?? query.field,
+      value: OrderPrismaModelMapper.mapQueryValue(query.field, query.value),
+    }));
+
+    const sort = isSortable
+      ? (this.mapProperty(params.sort) ?? 'CREATED_AT')
+      : 'CREATED_AT';
     const take = params.perPage;
     const skip = take * params.page;
+
     const total = await this.service.order.count({
       where: {
         AND: [
-          ...queries.map((query) => ({
+          ...mappedQueries.map((query) => ({
             [query.field]:
               query.operator === EDbOperators.EQUALS
                 ? query.value
@@ -75,7 +85,7 @@ export class OrderPrismaRepository extends OrderRepository {
     const models = await this.service.order.findMany({
       where: {
         AND: [
-          ...queries.map((query) => ({
+          ...mappedQueries.map((query) => ({
             [query.field]:
               query.operator === EDbOperators.EQUALS
                 ? query.value

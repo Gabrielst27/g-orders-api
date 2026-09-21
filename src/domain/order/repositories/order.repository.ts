@@ -25,6 +25,30 @@ export abstract class OrderRepository
     return [...super.sortableFields, 'NUMBER', 'DELIVERY_DATE'];
   }
 
+  protected readonly propertyMapper: Record<string, string> = {
+    id: 'ID',
+    number: 'NUMBER',
+    deliveryDate: 'DELIVERY_DATE',
+    deliveryStreet: 'DELIVERY_STREET',
+    deliveryNumber: 'DELIVERY_NUMBER',
+    deliveryNeighborhood: 'DELIVERY_NEIGHBORHOOD',
+    deliveryCity: 'DELIVERY_CITY',
+    deliveryState: 'DELIVERY_STATE',
+    deliveryZipcode: 'DELIVERY_ZIPCODE',
+    deliveryComplement: 'DELIVERY_COMPLEMENT',
+    status: 'STATUS',
+    customerId: 'CUSTOMER_ID',
+    createdAt: 'CREATED_AT',
+  };
+
+  protected mapProperty(property?: string): string | undefined {
+    if (!property) {
+      return undefined;
+    }
+
+    return this.propertyMapper[property] ?? property;
+  }
+
   abstract findById(id: string): Promise<OrderEntity>;
   abstract findLast(): Promise<OrderEntity | null>;
   abstract findByNumber(number: number): Promise<OrderEntity>;

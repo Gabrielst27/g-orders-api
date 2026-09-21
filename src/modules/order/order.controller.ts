@@ -33,6 +33,7 @@ import { CreateOrderRequest } from 'src/modules/order/requests/create.request';
 import { FindManyOrdersQuery } from 'src/modules/order/requests/find-many.request';
 import { UpdateOrderDeliveryRequest } from 'src/modules/order/requests/update-delivery.request';
 import { GetAuthUser } from 'src/utils/decorators/get-authenticated-user.decorator';
+import { SearchOrderResponse } from 'src/modules/order/responses/search.response';
 
 @ApiTags('Orders')
 @Controller({
@@ -82,7 +83,7 @@ export class OrderController {
   })
   @ApiOkResponse({
     description: 'Pedidos encontrados com sucesso.',
-    type: OrderResponse,
+    type: SearchOrderResponse,
     isArray: true,
   })
   @ApiBadRequestResponse({
