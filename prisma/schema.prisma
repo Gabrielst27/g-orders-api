@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  moduleFormat        = "cjs"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Status {
+  CREATED
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+model User {
+  ID         String   @id @db.Uuid
+  USERNAME   String   @db.VarChar(128)
+  CPF        String   @unique @db.VarChar(11)
+  PASSWORD   String   @db.VarChar(60)
+  CREATED_AT DateTime @db.Timestamptz()
+
+  orders Order[]
+
+  @@map("USERS")
+}
+
+model Order {
+  ID                    String   @id @db.Uuid
+  NUMBER                Int      @unique @db.Integer
+  DELIVERY_DATE         DateTime @db.Timestamptz()
+  DELIVERY_STREET       String   @db.VarChar(128)
+  DELIVERY_NUMBER       Int      @db.SmallInt
+  DELIVERY_NEIGHBORHOOD String   @db.VarChar(128)
+  DELIVERY_CITY         String   @db.VarChar(64)
+  DELIVERY_STATE        String   @db.VarChar(64)
+  DELIVERY_ZIP_CODE     String   @db.VarChar(8)
+  DELIVERY_COMPLEMENT   String?  @db.VarChar(128)
+  STATUS                Status
+  CUSTOMER_ID           String   @db.Uuid
+  CREATED_AT            DateTime @db.Timestamptz()
+  EXCLUDED              Boolean
+
+  customer User        @relation(fields: [CUSTOMER_ID], references: [ID])
+  items    OrderItem[]
+
+  @@index([NUMBER])
+  @@index([STATUS])
+  @@index([DELIVERY_DATE])
+  @@map("ORDERS")
+}
+
+model OrderItem {
+  ID                     String   @id @db.Uuid
+  ORDER_ID               String   @db.Uuid
+  PRODUCT_ID             String   @db.Uuid
+  QUANTITY               Int      @db.Integer
+  UNIT_PRICE_AT_PURCHASE Decimal  @db.Decimal(10, 2)
+  CREATED_AT             DateTime @db.Timestamptz()
+
+  order   Order   @relation(fields: [ORDER_ID], references: [ID])
+  product Product @relation(fields: [PRODUCT_ID], references: [ID])
+
+  @@map("ORDER_ITEMS")
+}
+
+model Product {
+  ID          String   @id @db.Uuid
+  DESCRIPTION String   @db.VarChar(128)
+  PRICE       Decimal  @db.Decimal(10, 2)
+  CREATED_AT  DateTime @db.Timestamptz()
+
+  orders OrderItem[]
+
+  @@map("PRODUCTS")
+}

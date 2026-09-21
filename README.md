@@ -1,98 +1,237 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Configuração do Banco de Dados
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Tecnologias
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### PostgreSQL
 
-## Description
+O PostgreSQL foi utilizado como banco de dados relacional da aplicação, uma vez que o desafio propôs uma abordagem relacional simples.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Prisma
 
-## Project setup
+O Prisma foi adicionado ao projeto como ORM responsável pela comunicação entre a aplicação e o PostgreSQL.
 
-```bash
-$ npm install
+O client é gerado no diretório:
+
+```text
+generated/prisma
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## Modelagem
 
-# watch mode
-$ npm run start:dev
+O banco atualmente é composto pelas seguintes estruturas:
 
-# production mode
-$ npm run start:prod
+```text
+USERS
+  │
+  │ 1:N
+  ▼
+ORDERS
+  │
+  │ 1:N
+  ▼
+ORDER_ITEMS
+  │
+  │ N:1
+  ▼
+PRODUCTS
 ```
 
-## Run tests
+### USERS
 
-```bash
-# unit tests
-$ npm run test
+A tabela `USERS` representa a identidade utilizada pela aplicação.
 
-# e2e tests
-$ npm run test:e2e
+Ela possui os dados necessários para identificação e autenticação do usuário:
 
-# test coverage
-$ npm run test:cov
+| Campo      | Tipo         | Restrições |
+| ---------- | ------------ | ---------- |
+| ID         | UUID         | PK         |
+| USERNAME   | VARCHAR(128) | —          |
+| CPF        | VARCHAR(11)  | UNIQUE     |
+| PASSWORD   | VARCHAR(60)  | (bcrypt)   |
+| CREATED_AT | TIMESTAMPTZ  | —          |
+
+O relacionamento com `ORDERS` permite associar os pedidos ao usuário responsável.
+
+> A entidade `User` é utilizada como controle de identidade e autenticação da aplicação. Não foi criada uma entidade `Customer` separada, evitando adicionar complexidade e controle de estado que não são necessários para o escopo atual do desafio.
+
+---
+
+### ORDERS
+
+A tabela `ORDERS` representa os pedidos da aplicação.
+
+| Campo                 | Tipo         | Restrições    |
+| --------------------- | ------------ | ------------- |
+| ID                    | UUID         | PK            |
+| NUMBER                | INTEGER      | UNIQUE        |
+| DELIVERY_DATE         | TIMESTAMPTZ  | —             |
+| DELIVERY_STREET       | VARCHAR(128) | —             |
+| DELIVERY_NUMBER       | SMALLINT     | —             |
+| DELIVERY_NEIGHBORHOOD | VARCHAR(128) | —             |
+| DELIVERY_CITY         | VARCHAR(64)  | —             |
+| DELIVERY_STATE        | VARCHAR(64)  | —             |
+| DELIVERY_ZIP_CODE     | VARCHAR(8)   | —             |
+| DELIVERY_COMPLEMENT   | VARCHAR(128) | —             |
+| STATUS                | ENUM         | —             |
+| CUSTOMER_ID           | UUID         | FK → USERS.ID |
+| CREATED_AT            | TIMESTAMPTZ  | —             |
+
+Optei por separar o endereço em campos dentro do próprio pedido, uma vez que adicionar o endereço por extenso em um único campo é um erro potencial conhecido na normalização de bancos de dados. Segundo a primeira forma normal, campos devem ser valores atômicos. Em projetos complexos eu manteria essa abordagem, porém criaria, também, uma tabela de endereços atrelada ao usuário, uma vez que a
+
+#### Índices
+
+Foram definidos índices para:
+
+```prisma
+@@index([NUMBER])
+@@index([STATUS])
+@@index([DELIVERY_DATE])
 ```
 
-## Deployment
+Dessa forma, é possível filtrar de forma otimizada por número do pedido, status e período.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### ORDER_ITEMS
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+A tabela `ORDER_ITEMS` representa os itens pertencentes a um pedido.
+
+| Campo                  | Tipo          | Restrições       |
+| ---------------------- | ------------- | ---------------- |
+| ID                     | UUID          | PK               |
+| ORDER_ID               | UUID          | FK → ORDERS.ID   |
+| PRODUCT_ID             | UUID          | FK → PRODUCTS.ID |
+| QUANTITY               | INTEGER       | —                |
+| UNIT_PRICE_AT_PURCHASE | DECIMAL(10,2) | —                |
+| CREATED_AT             | TIMESTAMPTZ   | —                |
+
+A tabela estabelece a relação entre pedidos e produtos:
+
+```text
+Order N ───── N Product
+       \     /
+        OrderItem
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+A associação é implementada através das chaves estrangeiras:
 
-## Resources
+```text
+ORDER_ID  → ORDERS.ID
+PRODUCT_ID → PRODUCTS.ID
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+#### Preço no momento da compra
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Além da referência ao produto, `ORDER_ITEMS` armazena:
 
-## Support
+```text
+UNIT_PRICE_AT_PURCHASE
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Essa informação representa o preço do produto no momento em que o item foi adicionado ao pedido.
 
-## Stay in touch
+Isso permite preservar o histórico do pedido mesmo que o preço atual do produto seja alterado posteriormente.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Exemplo:
 
-## License
+```text
+PRODUCTS
+--------------------------------
+DESCRIPTION = Produto A
+PRICE       = 150.00
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+ORDER_ITEMS
+--------------------------------
+PRODUCT_ID             = ...
+UNIT_PRICE_AT_PURCHASE = 100.00
+```
+
+Nesse cenário, o produto atualmente custa `150.00`, mas o item daquele pedido foi registrado por `100.00`.
+
+---
+
+### PRODUCTS
+
+A tabela `PRODUCTS` representa os produtos disponíveis para os pedidos.
+
+| Campo       | Tipo          | Restrições |
+| ----------- | ------------- | ---------- |
+| ID          | UUID          | PK         |
+| DESCRIPTION | VARCHAR(128)  | —          |
+| PRICE       | DECIMAL(10,2) | —          |
+| CREATED_AT  | TIMESTAMPTZ   | —          |
+
+O preço utiliza `DECIMAL(10,2)` para representar valores monetários sem utilizar ponto flutuante.
+
+---
+
+### Relacionamentos
+
+Os relacionamentos definidos no schema são:
+
+```text
+USERS
+  │
+  │ 1:N
+  ▼
+ORDERS
+  │
+  │ 1:N
+  ▼
+ORDER_ITEMS
+  │
+  │ N:1
+  ▼
+PRODUCTS
+```
+
+Em termos de chaves estrangeiras:
+
+```text
+ORDERS.CUSTOMER_ID
+        │
+        └──> USERS.ID
+
+ORDER_ITEMS.ORDER_ID
+        │
+        └──> ORDERS.ID
+
+ORDER_ITEMS.PRODUCT_ID
+        │
+        └──> PRODUCTS.ID
+```
+
+---
+
+### Tipos monetários
+
+Os campos relacionados a valores monetários utilizam:
+
+```prisma
+Decimal @db.Decimal(10, 2)
+```
+
+Atualmente:
+
+```text
+PRODUCTS.PRICE
+ORDER_ITEMS.UNIT_PRICE_AT_PURCHASE
+```
+
+O preço atual do produto e o preço praticado no pedido são tratados como informações distintas.
+
+---
+
+### Identificadores
+
+As entidades utilizam UUID como identificador primário:
+
+```prisma
+ID String @id @db.Uuid
+```
+
+A geração dos identificadores será realizada pela camada de domínio da aplicação, enquanto o Prisma será responsável pela persistência dos valores gerados.
+
+---
