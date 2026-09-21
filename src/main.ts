@@ -48,6 +48,6 @@ async function bootstrap() {
     new ForbiddenFilter(),
   );
 
-  await app.listen(process.env.API_PORT!);
+  await app.listen(process.env.API_PORT!, '0.0.0.0');
 }
 bootstrap();
