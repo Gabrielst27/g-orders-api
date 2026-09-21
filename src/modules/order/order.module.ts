@@ -12,6 +12,7 @@ import { ConfirmOrder } from 'src/application/order/use-cases/confirm.usecase';
 import { ShipOrder } from 'src/application/order/use-cases/ship.usecase';
 import { DeliverOrder } from 'src/application/order/use-cases/deliver.usecase';
 import { CancelOrder } from 'src/application/order/use-cases/cancel.usecase';
+import { UpdateOrderDelivery } from 'src/application/order/use-cases/update-address.usecase';
 
 @Module({
   imports: [AuthenticationModule, PrismaModule],
@@ -64,6 +65,13 @@ import { CancelOrder } from 'src/application/order/use-cases/cancel.usecase';
       provide: CancelOrder.UseCase,
       useFactory: (repository: OrderRepository) => {
         return new CancelOrder.UseCase(repository);
+      },
+      inject: ['Repository'],
+    },
+    {
+      provide: UpdateOrderDelivery.UseCase,
+      useFactory: (repository: OrderRepository) => {
+        return new UpdateOrderDelivery.UseCase(repository);
       },
       inject: ['Repository'],
     },

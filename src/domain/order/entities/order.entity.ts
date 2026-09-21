@@ -30,6 +30,19 @@ export class OrderEntity extends Entity<OrderEntityProps> {
   static createNew(
     props: Omit<OrderEntityProps, 'createdAt' | 'excluded' | 'status'>,
   ): OrderEntity {
+    const errors = OrderFieldsValidator.makeFieldsErrors();
+    const deliveryDateField = 'deliveryDate';
+    const now = new Date();
+    if (props.deliveryDate && props.deliveryDate <= now) {
+      OrderFieldsValidator.assignError(
+        errors,
+        deliveryDateField,
+        'Não é possível registrar uma data passada como data de entrega',
+      );
+    }
+    if (Object.keys(errors).length > 0) {
+      throw new EntityValidationError(errors);
+    }
     return new OrderEntity({
       number: props.number,
       deliveryDate: props.deliveryDate,
@@ -56,15 +69,28 @@ export class OrderEntity extends Entity<OrderEntityProps> {
     if (!isValid) throw new EntityValidationError(validator.errors);
   }
 
-  updateAddress(
-    newAddress: Partial<
+  updateDelivery(
+    newDelivery: Partial<
       Omit<
         OrderEntityProps,
         'number' | 'status' | 'createdAt' | 'customerId' | 'excluded'
       >
     >,
   ) {
-    this.touch(newAddress);
+    const errors = OrderFieldsValidator.makeFieldsErrors();
+    const deliveryDateField = 'deliveryDate';
+    const now = new Date();
+    if (newDelivery.deliveryDate && newDelivery.deliveryDate <= now) {
+      OrderFieldsValidator.assignError(
+        errors,
+        deliveryDateField,
+        'Não é possível registrar uma data no passado como data de entrega',
+      );
+    }
+    if (Object.keys(errors).length > 0) {
+      throw new EntityValidationError(errors);
+    }
+    this.touch(newDelivery);
   }
 
   confirm() {
@@ -187,8 +213,19 @@ export class OrderEntity extends Entity<OrderEntityProps> {
     }
 
     const newProps = {
-      ...json,
-      ...props,
+      number: json.number,
+      deliveryDate: props.deliveryDate ?? json.deliveryDate,
+      deliveryStreet: props.deliveryStreet ?? json.deliveryStreet,
+      deliveryNumber: props.deliveryNumber ?? json.deliveryNumber,
+      deliveryNeighborhood:
+        props.deliveryNeighborhood ?? json.deliveryNeighborhood,
+      deliveryCity: props.deliveryCity ?? json.deliveryCity,
+      deliveryState: props.deliveryState ?? json.deliveryState,
+      deliveryZipcode: props.deliveryZipcode ?? json.deliveryZipcode,
+      deliveryComplement: props.deliveryComplement ?? json.deliveryComplement,
+      customerId: json.customerId,
+      status: json.status,
+      excluded: json.excluded,
     };
     OrderEntity.validateFields(newProps);
     super.updateProps(newProps);

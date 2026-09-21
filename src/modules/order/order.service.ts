@@ -5,9 +5,11 @@ import { CreateOrder } from 'src/application/order/use-cases/create.usecase';
 import { DeliverOrder } from 'src/application/order/use-cases/deliver.usecase';
 import { FindManyOrders } from 'src/application/order/use-cases/find-many.usecase';
 import { ShipOrder } from 'src/application/order/use-cases/ship.usecase';
+import { UpdateOrderDelivery } from 'src/application/order/use-cases/update-address.usecase';
 import { AuthenticatedUser } from 'src/domain/auth/models/authenticated-user.model';
 import { CreateOrderRequest } from 'src/modules/order/requests/create.request';
 import { FindManyOrdersQuery } from 'src/modules/order/requests/find-many.request';
+import { UpdateOrderDeliveryRequest } from 'src/modules/order/requests/update-delivery.request';
 
 @Injectable()
 export class OrderService {
@@ -28,6 +30,9 @@ export class OrderService {
 
   @Inject(CancelOrder.UseCase)
   private readonly cancelOrderUseCase!: CancelOrder.UseCase;
+
+  @Inject(UpdateOrderDelivery.UseCase)
+  private readonly updateOrderDeliveryUseCase!: UpdateOrderDelivery.UseCase;
 
   async create(data: CreateOrderRequest, authUser: AuthenticatedUser.Props) {
     const deliveryDate = new Date(data.deliveryDate);
@@ -79,6 +84,22 @@ export class OrderService {
     return await this.cancelOrderUseCase.execute({
       orderId,
       authUserId: authUser.id,
+    });
+  }
+
+  async updateDelivery(
+    orderId: string,
+    data: UpdateOrderDeliveryRequest,
+    authUser: AuthenticatedUser.Props,
+  ) {
+    const deliveryDate = data.deliveryDate
+      ? new Date(data.deliveryDate)
+      : undefined;
+    return await this.updateOrderDeliveryUseCase.execute({
+      orderId,
+      authUserId: authUser.id,
+      ...data,
+      deliveryDate,
     });
   }
 }

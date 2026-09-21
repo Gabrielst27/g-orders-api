@@ -67,6 +67,15 @@ describe('OrderEntity', () => {
       ).toThrow(EntityValidationError);
     });
 
+    it('should throw EntityValidationError when deliveryDate is lesser or equal than now', () => {
+      expect(() =>
+        OrderEntity.createNew({
+          ...validProps,
+          deliveryDate: new Date('2000-00-00'),
+        }),
+      ).toThrow(EntityValidationError);
+    });
+
     it('should throw EntityValidationError when deliveryDate is invalid', () => {
       expect(() =>
         OrderEntity.createNew({
@@ -304,7 +313,7 @@ describe('OrderEntity', () => {
       order.cancel();
       order.exclude();
 
-      expect(() => order.updateAddress({})).toThrow(EntityValidationError);
+      expect(() => order.updateDelivery({})).toThrow(EntityValidationError);
     });
 
     it('should throw EntityValidationError when try to exclude a non canceled order', () => {

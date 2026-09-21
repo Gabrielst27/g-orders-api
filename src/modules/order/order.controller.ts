@@ -16,6 +16,7 @@ import { AuthenticationGuard } from 'src/modules/authentication/guards/authentic
 import { OrderService } from 'src/modules/order/order.service';
 import { CreateOrderRequest } from 'src/modules/order/requests/create.request';
 import { FindManyOrdersQuery } from 'src/modules/order/requests/find-many.request';
+import { UpdateOrderDeliveryRequest } from 'src/modules/order/requests/update-delivery.request';
 import { GetAuthUser } from 'src/utils/decorators/get-authenticated-user.decorator';
 
 @Controller({
@@ -79,5 +80,16 @@ export class OrderController {
     @GetAuthUser() authUser: AuthenticatedUser.Props,
   ) {
     return this.service.cancel(orderId, authUser);
+  }
+
+  @Put(':orderId/update-delivery')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticationGuard)
+  updateDelivery(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @Body() body: UpdateOrderDeliveryRequest,
+    @GetAuthUser() authUser: AuthenticatedUser.Props,
+  ) {
+    return this.service.updateDelivery(orderId, body, authUser);
   }
 }
